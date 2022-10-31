@@ -10,6 +10,10 @@
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 /[Uu]serSettings/
+/[Uu]serSettings/Layouts/
+/[Pp]rojectSettings/Packages/com.unity.probuilder/
+/[Pp]rojectSettings/Packages/com.unity.progrids/
+/[Pp]rojectSettings/Packages/com.unity.testtools.codecoverage/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
