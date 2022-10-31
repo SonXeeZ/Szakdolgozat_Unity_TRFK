@@ -1,2 +1,13 @@
-# Szakdolgozat_Unity_TRFK
-Takács Róbert és Földesi Krisztofer szakdolgozat
+# Takács Róbert & Földesi Krisztofer Szakdolgozat
+
+## Projekt Linkek
+
+[Google Docs](https://docs.google.com/document/d/1xWJLNvHGhnUALusKGDm76KblBq6vdTI1RlVIG3L2Ee4/edit) - A projekthez tartozó ideiglenes dokumentáció.
+
+## Felhasznált programok
+- [Unity](https://unity.com/) - Videójáték-motor.
+- [Blender](https://www.blender.org/) - 3D Modellező program.
+
+## Egyéb
+A projektünkhöz a Unity __2021.3.11f1__ és a Blender __V3.3__ verzióját használjuk.
+
