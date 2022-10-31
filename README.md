@@ -7,6 +7,9 @@
 ## Felhasznált programok
 - [Unity](https://unity.com/) - Videójáték-motor.
 - [Blender](https://www.blender.org/) - 3D Modellező program.
+- [Git version 2.3+](https://gitforwindows.org/)
+- [LFS version 2.0.1+](https://git-lfs.github.com/)
+
 
 ## Egyéb
 A projektünkhöz a Unity __2021.3.11f1__ és a Blender __V3.3__ verzióját használjuk.
