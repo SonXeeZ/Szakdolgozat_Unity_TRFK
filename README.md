@@ -2,7 +2,8 @@
 
 ## Projekt Linkek
 
-[Google Docs](https://docs.google.com/document/d/1xWJLNvHGhnUALusKGDm76KblBq6vdTI1RlVIG3L2Ee4/edit) - A projekthez tartozó ideiglenes dokumentáció.
+- [Trello](https://trello.com/b/GnXxR2jx/szakdolgozat) - A projekthez tartozó Trello oldal.
+- [Google Docs](https://docs.google.com/document/d/1xWJLNvHGhnUALusKGDm76KblBq6vdTI1RlVIG3L2Ee4/edit) - A projekthez tartozó ideiglenes dokumentáció.
 
 ## Felhasznált programok
 - [Unity](https://unity.com/) - Videójáték-motor.
