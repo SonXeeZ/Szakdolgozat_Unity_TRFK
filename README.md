@@ -2,6 +2,7 @@
 
 ## Projekt Linkek
 
+- [Szakdolgozati munkaterv](https://drive.google.com/file/d/1cSrIWbedrnN9E6lEaK3Xa7kX7YoCxNa2/view?usp=sharing) - A Szakdolgozati munkatervhez tartozó PDF.
 - [Trello](https://trello.com/b/GnXxR2jx/szakdolgozat) - A projekthez tartozó Trello oldal.
 - [Google Docs](https://docs.google.com/document/d/1xWJLNvHGhnUALusKGDm76KblBq6vdTI1RlVIG3L2Ee4/edit) - A projekthez tartozó ideiglenes dokumentáció.
 
