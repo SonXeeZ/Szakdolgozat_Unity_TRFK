@@ -3,9 +3,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.AI;
 using System;
+using Unity.Netcode;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
 
     [SerializeField] private InputAction movement = new InputAction();
@@ -34,6 +35,8 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
+        if (!IsOwner) return;
+
         HandleInput();
     }
 
