@@ -6,6 +6,7 @@
 - [Trello](https://trello.com/b/GnXxR2jx/szakdolgozat) - A projekthez tartozó Trello oldal.
 - [Google Docs](https://docs.google.com/document/d/1xWJLNvHGhnUALusKGDm76KblBq6vdTI1RlVIG3L2Ee4/edit) - A projekthez tartozó ideiglenes dokumentáció.
 - [Ötlettár](https://docs.google.com/document/d/1bwt2EgEc5fCK6lyTG8Is8FyqSUaOkJQ-jcDo0RsvM5E/edit?usp=sharing) - A projekttel kapcsolatos ötletek gyűjteménye.
+- [Fejlesztési képek](https://docs.google.com/document/d/16q4xNqh6ZCvpghAOXA6AoX62OdeaUruDi_UyWe16LxM/edit?usp=sharing) - Képek a bizonyos fejlesztési szakaszokból.
 
 ## Felhasznált programok
 - [Unity](https://unity.com/) - Videójáték-motor.
