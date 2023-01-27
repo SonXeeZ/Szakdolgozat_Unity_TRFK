@@ -46,6 +46,10 @@ public class PlayerController : NetworkBehaviour
         {
             Debug.Log(OwnerClientId + "; " + newValue._int + "; " + newValue._bool + "; " + newValue.message);
         };
+
+        // set the camera to the player after spawning
+        
+        Camera.main.GetComponent<CameraController>().SetTarget();
     }
 
     private void Start()
