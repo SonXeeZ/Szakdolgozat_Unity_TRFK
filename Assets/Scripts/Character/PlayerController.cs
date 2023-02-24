@@ -20,11 +20,11 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] 
     private Vector3 movePosition;
 
-    private Vector3 spawnPosition = new Vector3(1.436982f, 0.9999995f, -7.390406f);
+    private Vector3 spawnPosition = new Vector3(0.8142774f, 1f, -7.049958f);
 
     [SerializeField] private float speed; // character
 
-    private float rotationSpeed = 30f;
+    private float rotationSpeed = 10f;
 
     [SerializeField] 
     private Rigidbody rb;
@@ -68,11 +68,11 @@ public class PlayerController : NetworkBehaviour
 
             RaycastHit hit;
 
-            Debug.Log("Raycast hit.");
+            //Debug.Log("Raycast hit.");
 
             if(Physics.Raycast(ray, out hit, 1000, layerMaskWalkable)){
                 
-                Debug.Log("Moving character to: " + hit.point);
+                //Debug.Log("Moving character to: " + hit.point);
 
                 movePosition = hit.point;
 

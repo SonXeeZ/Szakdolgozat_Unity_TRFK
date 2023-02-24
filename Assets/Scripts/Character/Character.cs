@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -22,92 +23,135 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
     [SerializeField] private NetworkVariable<float> speed = new NetworkVariable<float>();
     public NetworkVariable<float> Speed { get => speed; set => speed = value; }
 
+    private Transform enemyTransform;
+
+
+    // TODO: PlayerState
+    private NetworkVariable<bool> canAttack = new NetworkVariable<bool>(); // -- FK -- 2023.02.23 23:15
+
+
     [ServerRpc]
-    public void DealDamageServerRpc(ulong targetClientId, int damage)
+    public void DealDamageServerRpc(int damage)
     {
-        if(currentHealth.Value <= 0){
+        if(enemyTransform.GetComponent<Character>().currentHealth.Value <= 0){
             return;
         }else{
-            Debug.Log("Not dead.");
-        } // TODO: IsDead?
+        } 
 
-        var targetPlayer = NetworkManager.Singleton.ConnectedClients[targetClientId].PlayerObject.GetComponent<Character>();
-        var targetCharacter = targetPlayer.GetComponent<Character>();
-
-        targetCharacter.TakeDamageClientRpc(damage);
+        if(!canAttack.Value) return;
+        var enemyId = NetworkManager.Singleton.ConnectedClients[enemyTransform.gameObject.GetComponent<NetworkObject>().OwnerClientId];
+        enemyTransform.GetComponent<Character>().CurrentHealth.Value -= damage;
     }
     
-
-    public void DealDamage(int damage, Collision collision)
+    // https://docs.unity3d.com/ScriptReference/Collider.OnTriggerEnter.html
+    private void OnTriggerEnter(Collider other)
     {
+        if(IsOwner){
+            if(other.gameObject.CompareTag("Player")){ // -- FK -- 2023.02.23 23:30
+            
+            //TODO: GetDistance Vector3 a legközelebbi "player" kiválasztásához.
 
-        if(Input.GetKeyDown(KeyCode.Space) && collision.gameObject.CompareTag("Player")){
-            var targetPlayer = collision.gameObject.GetComponent<Character>();
-
-            DealDamageServerRpc(targetPlayer.OwnerClientId, damage);
+            EnteredInEnemyTriggerWithPlayerServerRPC(other.gameObject.GetComponent<NetworkObject>().OwnerClientId);
+            }
+            else{
+                Debug.Log("You can't attack this object.");
+            }
         }
     }
 
-    public void TakeDamage(int damage){
-        if(!IsServer) return; // Csak a szerveren kell számolni az életerőt.
-
-        TakeDamageClientRpc(damage);
+    [ServerRpc]
+    private void EnableAttackToSelfServerRpc()
+    {
+        canAttack.Value = true;
     }
 
-    [ClientRpc]
-    public void TakeDamageClientRpc(int damage)
+    [ServerRpc]
+    private void EnteredInEnemyTriggerWithPlayerServerRPC(ulong enemyPlayerId)
     {
-        currentHealth.Value -= damage;
-        Debug.Log("[ClientRpc]: Took damage. " + damage );
+        transform.GetComponent<Character>().canAttack.Value = true;
+        enemyTransform = NetworkManager.Singleton.ConnectedClients[enemyPlayerId].PlayerObject.transform;
+        EnemySetMessageClientRpc(enemyPlayerId);
+    }
 
-        if(currentHealth.Value <= 0){
-            Die();
+    public void DealDamage(int damage)
+    {
+
+        if(Input.GetKeyDown(KeyCode.Space) && canAttack.Value == true){
+            DealDamageServerRpc(damage);
+        } else{
+            return;
         }
     }
 
     public void Die()
     {
-        Debug.Log("Dead.");
+        Debug.Log("You're dead.");
     }
 
     
 
-    private void Start(){
-
-        
-        
-
-        
+    private void Start(){ 
     } 
 
     void Update(){
 
-        
+        if(IsOwner){
+            DealDamage(Damage.Value);
+        }
     }
 
     public override void OnNetworkSpawn()
     {
         if(IsServer){
+            // TODO: Lekérni az adatbázisból a karakter adatait.
             MaxHealth.Value = 100;
             CurrentHealth.Value = MaxHealth.Value;
             Damage.Value = 10;
             Level.Value = 1;
             Experience.Value = 0;
             Speed.Value = 5.12f;
+            canAttack.Value = false;
+
+            canAttack.OnValueChanged += CanAttackOnValueChanged; // -- FK -- 2023.02.23 1:20
+            CurrentHealth.OnValueChanged += CurrentHealthOnValueChanged; // -- FK -- 2023.02.24 18:19
         }  
     }
 
-    // https://docs.unity3d.com/ScriptReference/Collider.OnCollisionEnter.html
-
-    // https://docs-multiplayer.unity3d.com/netcode/current/advanced-topics/physics/index.html
-    /*
-        - NetworkRigidbody -t kellett hozzáadni a Character prefabhoz.
-        - 
-    */
-    
-    private void OnCollisionStay(Collision collision)
+    private void CurrentHealthOnValueChanged(int previousValue, int newValue)
     {
-        // Debug.Log("OnCollisionStay called.");
-        DealDamage(Damage.Value, collision);
+        Debug.Log("[CurrentHealthOnValueChanged] new:  " + newValue + "previous value: " + previousValue);
     }
+
+    private void CanAttackOnValueChanged(bool previousValue, bool newValue) // -- FK -- 2023.02.23 1:23
+    {
+        Debug.Log("[CanAttackOnValueChanged] new:" + newValue + "previous value: " + previousValue);
+    }
+
+    
+
+    private void OnTriggerExit(Collider other){
+        if(IsOwner){
+            LeftTriggerServerRPC();
+        }
+        
+    }
+
+
+
+    
+
+    
+    [ServerRpc]
+    private void LeftTriggerServerRPC()
+    {
+        transform.GetComponent<Character>().canAttack.Value = false;  
+        enemyTransform = null;   
+    }
+
+    [ClientRpc]
+    private void EnemySetMessageClientRpc(ulong enemyPlayerId)
+    {
+        Debug.Log("Enemy player set to id: " + enemyPlayerId);
+    }
+
 }

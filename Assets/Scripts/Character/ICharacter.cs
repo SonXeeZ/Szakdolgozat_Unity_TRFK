@@ -4,9 +4,7 @@ using UnityEngine;
 
 public interface ICharacter
 {
-    void DealDamage(int damage, Collision collision);
-    void DealDamageServerRpc(ulong targetClientId, int damage);
-    void TakeDamage(int damage);
-    void TakeDamageClientRpc(int damage);
+    void DealDamage(int damage);
+    void DealDamageServerRpc(int damage);
     void Die();
 }
