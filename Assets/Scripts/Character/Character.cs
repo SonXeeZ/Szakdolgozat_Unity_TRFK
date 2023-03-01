@@ -1,6 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -23,11 +22,66 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
     [SerializeField] private NetworkVariable<float> speed = new NetworkVariable<float>();
     public NetworkVariable<float> Speed { get => speed; set => speed = value; }
 
+    private NetworkVariable<NetworkString> characterName = new NetworkVariable<NetworkString>();
+    public NetworkVariable<NetworkString> CharacterName { get => characterName; set => characterName = value; }
+
+
     private Transform enemyTransform;
+    private bool overlaySet = false; // -- FK -- 2023.03.01 18:10
 
 
     // TODO: PlayerState
+
     private NetworkVariable<bool> canAttack = new NetworkVariable<bool>(); // -- FK -- 2023.02.23 23:15
+
+    public override void OnNetworkSpawn()
+    {
+        if(IsServer){
+            // TODO: Lekérni az adatbázisból a karakter adatait.
+            MaxHealth.Value = 100;
+            CurrentHealth.Value = MaxHealth.Value;
+            Damage.Value = 10;
+            Level.Value = 1;
+            Experience.Value = 0;
+            Speed.Value = 5.12f;
+            canAttack.Value = false;
+            CharacterName.Value = $"Player {OwnerClientId}"; // -- FK -- 2023.02.25 2:50
+
+
+            canAttack.OnValueChanged += CanAttackOnValueChanged; // -- FK -- 2023.02.23 1:20
+            CurrentHealth.OnValueChanged += CurrentHealthOnValueChanged; // -- FK -- 2023.02.24 18:19
+            //TODO: Player nevet szinkronizálni.
+
+        } 
+    }
+
+    // -- FK -- 2023.03.01 18:10
+    public void SetOverlay(){
+        var localPlayerOverlay = gameObject.GetComponentInChildren<TextMeshProUGUI>();
+        localPlayerOverlay.text = CharacterName.Value;
+    }
+
+    private void Start(){ 
+            
+    } 
+
+    void Update(){
+        // -- FK -- 2023.03.01 18:10
+        if(!overlaySet && !string.IsNullOrEmpty(characterName.Value)){ 
+            SetOverlay();
+            overlaySet = true;
+        }
+
+        
+        Debug.Log("CharacName value: " + CharacterName.Value);
+
+
+        if(IsOwner && IsLocalPlayer){
+            DealDamage(Damage.Value);
+            //ClientRequestNameUpdate();
+            //transform.GetComponentInChildren<Canvas>().GetComponentInChildren<TextMeshProUGUI>().text = CharacterName.Value;
+        }
+    }
 
 
     [ServerRpc]
@@ -39,7 +93,7 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
         } 
 
         if(!canAttack.Value) return;
-        var enemyId = NetworkManager.Singleton.ConnectedClients[enemyTransform.gameObject.GetComponent<NetworkObject>().OwnerClientId];
+        //var enemyId = NetworkManager.Singleton.ConnectedClients[enemyTransform.gameObject.GetComponent<NetworkObject>().OwnerClientId];
         enemyTransform.GetComponent<Character>().CurrentHealth.Value -= damage;
     }
     
@@ -75,7 +129,6 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
 
     public void DealDamage(int damage)
     {
-
         if(Input.GetKeyDown(KeyCode.Space) && canAttack.Value == true){
             DealDamageServerRpc(damage);
         } else{
@@ -88,35 +141,10 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
         Debug.Log("You're dead.");
     }
 
+
+    // https://www.youtube.com/watch?v=rFCFMkzFaog&list=PLQMQNmwN3FvyyeI1-bDcBPmZiSaDMbFTi -- FK -- 2023.02.25 2:50 [TODO: BEIRNI A DOCSBA]
+
     
-
-    private void Start(){ 
-    } 
-
-    void Update(){
-
-        if(IsOwner){
-            DealDamage(Damage.Value);
-        }
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        if(IsServer){
-            // TODO: Lekérni az adatbázisból a karakter adatait.
-            MaxHealth.Value = 100;
-            CurrentHealth.Value = MaxHealth.Value;
-            Damage.Value = 10;
-            Level.Value = 1;
-            Experience.Value = 0;
-            Speed.Value = 5.12f;
-            canAttack.Value = false;
-
-            canAttack.OnValueChanged += CanAttackOnValueChanged; // -- FK -- 2023.02.23 1:20
-            CurrentHealth.OnValueChanged += CurrentHealthOnValueChanged; // -- FK -- 2023.02.24 18:19
-        }  
-    }
-
     private void CurrentHealthOnValueChanged(int previousValue, int newValue)
     {
         Debug.Log("[CurrentHealthOnValueChanged] new:  " + newValue + "previous value: " + previousValue);
@@ -135,11 +163,6 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
         }
         
     }
-
-
-
-    
-
     
     [ServerRpc]
     private void LeftTriggerServerRPC()
