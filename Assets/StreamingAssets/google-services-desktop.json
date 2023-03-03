@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "992035696549",
+    "project_id": "unity-trfk-teszt",
+    "storage_bucket": "unity-trfk-teszt.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:992035696549:android:820060c61a87835284c24c",
+        "android_client_info": {
+          "package_name": "com.TRFK.SzakdolgozatUnityTRFK"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "992035696549-ko2st0ngd63evalno3qp6kpulq03crhm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_EGpaTYFejibSiJhsQpupX6Sw3ulrvOQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "992035696549-ko2st0ngd63evalno3qp6kpulq03crhm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

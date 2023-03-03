@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: TRFK
-  productName: Szakdolgozat_Unity_TRFK
+  productName: SzakdolgozatUnityTRFK
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -155,7 +155,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Standalone: com.TRFK.Szakdolgozat-Unity-TRFK
+    Standalone: com.TRFK.SzakdolgozatUnityTRFK
   buildNumber:
     Standalone: 0
     iPhone: 0
@@ -686,7 +686,13 @@ PlayerSettings:
   XboxOneOverrideIdentityPublisher: 
   vrEditorSettings: {}
   cloudServicesEnabled:
+    Build: 0
+    Collab: 0
+    Game Performance: 0
+    Purchasing: 0
+    UDP: 0
     UNet: 1
+    Unity Ads: 0
   luminIcon:
     m_Name: 
     m_ModelFolderPath: 
@@ -700,11 +706,11 @@ PlayerSettings:
     m_VersionName: 
   apiCompatibilityLevel: 6
   activeInputHandler: 2
-  cloudProjectId: 
+  cloudProjectId: d9a9ca47-9722-4a43-a3cb-45e88157bce7
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: Szakdolgozat_Unity_TRFK
+  organizationId: robi77
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 
