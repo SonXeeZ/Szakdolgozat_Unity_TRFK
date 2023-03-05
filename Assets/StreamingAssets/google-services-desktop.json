@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "992035696549",
-    "project_id": "unity-trfk-teszt",
-    "storage_bucket": "unity-trfk-teszt.appspot.com"
+    "project_number": "1076729519084",
+    "project_id": "szakdolgozattrfk",
+    "storage_bucket": "szakdolgozattrfk.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:992035696549:android:820060c61a87835284c24c",
+        "mobilesdk_app_id": "1:1076729519084:android:79590660c725936c56bec9",
         "android_client_info": {
           "package_name": "com.TRFK.SzakdolgozatUnityTRFK"
         }
       },
       "oauth_client": [
         {
-          "client_id": "992035696549-ko2st0ngd63evalno3qp6kpulq03crhm.apps.googleusercontent.com",
+          "client_id": "1076729519084-nqofr5df3ensvn74oukdmpeikf5sr048.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD_EGpaTYFejibSiJhsQpupX6Sw3ulrvOQ"
+          "current_key": "AIzaSyDYHSOk7k7I63JLgu9mdq8qS0I4d9Sk-tc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "992035696549-ko2st0ngd63evalno3qp6kpulq03crhm.apps.googleusercontent.com",
+              "client_id": "1076729519084-nqofr5df3ensvn74oukdmpeikf5sr048.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

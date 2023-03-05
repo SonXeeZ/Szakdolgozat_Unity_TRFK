@@ -70,3 +70,7 @@ crashlytics-build.properties
 ProjectSettings/Packages/com.unity.learn.iet-framework/
 
 Assets/Firebase/Plugins/x86_64/FirebaseCppApp-10_4_0.bundle
+
+Assets/StreamingAssets/google-services-desktop.json
+
+Assets/StreamingAssets/google-services-desktop.json.meta
