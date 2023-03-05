@@ -83,3 +83,4 @@
 *.unity linguist-generated
 *.ext filter=lfs diff=lfs merge=lfs -text
 lfs max_file_size = 500MB
+Assets/Firebase/Plugins/x86_64/FirebaseCppApp-10_4_0.bundle filter=lfs diff=lfs merge=lfs -text
