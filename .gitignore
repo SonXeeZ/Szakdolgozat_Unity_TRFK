@@ -14,6 +14,9 @@
 /[Pp]rojectSettings/Packages/com.unity.progrids/
 /[Pp]rojectSettings/Packages/com.unity.testtools.codecoverage/
 /[Pp]rojectSettings/Packages/com.unity.learn.iet-framework/
+/[Pp]rojectSettings/Packages/com.unity.learn.iet-framework/
+/[Pp]rojectsSettings/Assets/Firebase/
+/[Pp]rojectsSettings/GvhProjectSettings.xml
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
