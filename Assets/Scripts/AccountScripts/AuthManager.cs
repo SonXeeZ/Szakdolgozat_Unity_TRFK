@@ -4,30 +4,24 @@ using UnityEngine;
 using UnityEngine.UI;
 using Firebase;
 using Firebase.Auth;
+using Firebase.Database;
 using TMPro;
 using UnityEngine.SceneManagement;
-using static UnityEngine.InputSystem.HID.HID;
 
 public class AuthManager : MonoBehaviour
 {
-        //public static AuthManager Instance { get; private set; }
-
-
-    //Firebase variables
     [Header("Firebase")]
     public DependencyStatus dependencyStatus;
     public FirebaseAuth auth;
-    public FirebaseUser User;
+    public FirebaseUser user;
+    public DatabaseReference userDatabaseRef;
 
-    //Login variables
     [Header("Login")]
     public TMP_InputField emailLoginField;
     public TMP_InputField passwordLoginField;
     public TMP_Text warningLoginText;
     public TMP_Text confirmLoginText;
 
-
-    //Register variables
     [Header("Register")]
     public TMP_InputField usernameRegisterField;
     public TMP_InputField emailRegisterField;
@@ -35,20 +29,16 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField passwordRegisterVerifyField;
     public TMP_Text warningRegisterText;
 
-    void Awake()
+    [SerializeField] private RegisterConfirmation myConfirmationWindow;
+
+    private void Start()
     {
-        /*loginAuthenticateButton.onClick.AddListener(() => {
-            AuthManager.Instance.Login(EditPlayerName.Instance.GetPlayerName(), passwordLoginField.text);
-        });*/
-       
-    
-        //Check that all of the necessary dependencies for Firebase are present on the system
+        //FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("YOUR_DATABASE_URL_HERE");
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
         {
             dependencyStatus = task.Result;
             if (dependencyStatus == DependencyStatus.Available)
             {
-                //If they are avalible Initialize Firebase
                 InitializeFirebase();
             }
             else
@@ -57,41 +47,35 @@ public class AuthManager : MonoBehaviour
             }
         });
 
-        
+        OpenConfirmationWindow("Sikeresen regisztráltál, menjen a játék!");
     }
 
     private void InitializeFirebase()
     {
         Debug.Log("Setting up Firebase Auth");
-        //Set the authentication instance object
         auth = FirebaseAuth.DefaultInstance;
+        //userDatabaseRef = FirebaseDatabase.DefaultInstance.GetReference("users");
     }
 
-    //Function for the login button
     public void LoginButton()
-    {       
-        //Call the login coroutine passing the email and password
+    {
         StartCoroutine(Login(emailLoginField.text, passwordLoginField.text));
     }
-    //Function for the register button
+
     public void RegisterButton()
     {
-        //Call the register coroutine passing the email, password, and username
         StartCoroutine(Register(emailRegisterField.text, passwordRegisterField.text, usernameRegisterField.text));
     }
 
-    private IEnumerator Login(string _email, string _password)
+    private IEnumerator Login(string email, string password)
     {
-        //Call the Firebase auth signin function passing the email and password
-        var LoginTask = auth.SignInWithEmailAndPasswordAsync(_email, _password);
-        //Wait until the task completes
-        yield return new WaitUntil(predicate: () => LoginTask.IsCompleted);
+        var task = auth.SignInWithEmailAndPasswordAsync(email, password);
+        yield return new WaitUntil(() => task.IsCompleted);
 
-        if (LoginTask.Exception != null)
+        if (task.Exception != null)
         {
-            //If there are errors handle them
-            Debug.LogWarning(message: $"Failed to register task with {LoginTask.Exception}");
-            FirebaseException firebaseEx = LoginTask.Exception.GetBaseException() as FirebaseException;
+            Debug.LogWarning($"Failed to sign in with {task.Exception}");
+            FirebaseException firebaseEx = task.Exception.GetBaseException() as FirebaseException;
             AuthError errorCode = (AuthError)firebaseEx.ErrorCode;
 
             string message = "Login Failed!";
@@ -117,93 +101,90 @@ public class AuthManager : MonoBehaviour
         }
         else
         {
-            //User is now logged in
-            //Now get the result
-            User = LoginTask.Result;
-            Debug.LogFormat("User signed in successfully: {0} ({1}) ({2})", User.DisplayName, User.Email, User.UserId);
+            user = task.Result;
+            Debug.LogFormat("User signed in successfully: {0} ({1}) ({2})", user.DisplayName, user.Email, user.UserId);
             warningLoginText.text = "";
             confirmLoginText.text = "Logged In";
             SceneManager.LoadScene("SampleScene");
         }
     }
 
-    private IEnumerator Register(string _email, string _password, string _username)
+    private IEnumerator Register(string email, string password, string username)
     {
-        if (_username == "")
+        if (string.IsNullOrEmpty(username))
         {
-            //If the username field is blank show a warning
-            warningRegisterText.text = "Missing Username";
+        warningRegisterText.text = "Missing Username";
         }
         else if (passwordRegisterField.text != passwordRegisterVerifyField.text)
         {
-            //If the password does not match show a warning
-            warningRegisterText.text = "Password Does Not Match!";
+        warningRegisterText.text = "Password Does Not Match!";
         }
         else
         {
-            //Call the Firebase auth signin function passing the email and password
-            var RegisterTask = auth.CreateUserWithEmailAndPasswordAsync(_email, _password);
-            //Wait until the task completes
-            yield return new WaitUntil(predicate: () => RegisterTask.IsCompleted);
-
-            if (RegisterTask.Exception != null)
+            var task = auth.CreateUserWithEmailAndPasswordAsync(email, password);
+            yield return new WaitUntil(() => task.IsCompleted);
+            if (task.Exception != null)
             {
-                //If there are errors handle them
-                Debug.LogWarning(message: $"Failed to register task with {RegisterTask.Exception}");
-                FirebaseException firebaseEx = RegisterTask.Exception.GetBaseException() as FirebaseException;
+                Debug.LogWarning($"Failed to create user with {task.Exception}");
+                FirebaseException firebaseEx = task.Exception.GetBaseException() as FirebaseException;
                 AuthError errorCode = (AuthError)firebaseEx.ErrorCode;
 
-                string message = "Register Failed!";
+                string message = "Register failed!";
                 switch (errorCode)
                 {
-                    case AuthError.MissingEmail:
-                        message = "Missing Email";
+                    case AuthError.EmailAlreadyInUse:
+                        message = "Email is already in use";
                         break;
-                    case AuthError.MissingPassword:
-                        message = "Missing Password";
+                    case AuthError.InvalidEmail:
+                        message = "Invalid email format";
                         break;
                     case AuthError.WeakPassword:
-                        message = "Weak Password";
-                        break;
-                    case AuthError.EmailAlreadyInUse:
-                        message = "Email Already In Use";
+                        message = "Password is too weak";
                         break;
                 }
                 warningRegisterText.text = message;
             }
             else
             {
-                //User has now been created
-                //Now get the result
-                User = RegisterTask.Result;
+                user = task.Result;
+                myConfirmationWindow.confirmButton.onClick.AddListener(ConfirmButtonClicked);
 
-                if (User != null)
-                {
-                    //Create a user profile and set the username
-                    UserProfile profile = new UserProfile { DisplayName = _username };
 
-                    //Call the Firebase auth update user profile function passing the profile with the username
-                    var ProfileTask = User.UpdateUserProfileAsync(profile);
-                    //Wait until the task completes
-                    yield return new WaitUntil(predicate: () => ProfileTask.IsCompleted);
+                warningRegisterText.text = "";
+                confirmLoginText.text = "Registration Successful";
+                myConfirmationWindow.gameObject.SetActive(true);
 
-                    if (ProfileTask.Exception != null)
-                    {
-                        //If there are errors handle them
-                        Debug.LogWarning(message: $"Failed to register task with {ProfileTask.Exception}");
-                        FirebaseException firebaseEx = ProfileTask.Exception.GetBaseException() as FirebaseException;
-                        AuthError errorCode = (AuthError)firebaseEx.ErrorCode;
-                        warningRegisterText.text = "Username Set Failed!";
-                    }
-                    //else
-                    //{
-                    //    //Username is now set
-                    //    //Now return to login screen
-                    //    UIManager.instance.LoginScreen();
-                    //    warningRegisterText.text = "";
-                    //}
-                }
+                //SceneManager.LoadScene("SampleScene");
             }
         }
+    }
+    
+    private void OpenConfirmationWindow(string message)
+    {
+        myConfirmationWindow.confirmButton.onClick.AddListener(ConfirmButtonClicked);
+        myConfirmationWindow.confirmRegisterText.text = message;
+    }
+
+    private void ConfirmButtonClicked()
+    {
+         Debug.Log("Registration successful");
+        // Save user data to Firebase Realtime Database
+        //https://firebase.google.com/docs/database/unity/save-data
+        userDatabaseRef = FirebaseDatabase.DefaultInstance.RootReference.Child("users");
+
+            if (user != null)
+            {
+                // Create a new child under the "users" node with the UID as the key and the username as the value.
+                userDatabaseRef = FirebaseDatabase.DefaultInstance.RootReference.Child("users");
+                Dictionary<string, object> childUpdates = new Dictionary<string, object>();
+                childUpdates["/" + user.UserId + "/username"] = usernameRegisterField.text;
+                userDatabaseRef.UpdateChildrenAsync(childUpdates);
+            }
+            else
+            {
+                Debug.LogWarning("User is null, unable to save user data to database.");
+            }
+        Debug.Log("Confirm button clicked");
+        myConfirmationWindow.gameObject.SetActive(false);
     }
 }
