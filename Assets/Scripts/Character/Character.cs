@@ -2,6 +2,8 @@ using System;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using Firebase;
+using Firebase.Auth;
 
 public class Character : NetworkBehaviour, ICharacter, ICharacterStats
 {
@@ -33,9 +35,12 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
     // TODO: PlayerState
 
     private NetworkVariable<bool> canAttack = new NetworkVariable<bool>(); // -- FK -- 2023.02.23 23:15
+    
+    private TextMeshProUGUI characterNameUI;
 
     public override void OnNetworkSpawn()
     {
+
         if(IsServer){
             // TODO: Lekérni az adatbázisból a karakter adatait.
             MaxHealth.Value = 100;
@@ -45,14 +50,51 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
             Experience.Value = 0;
             Speed.Value = 5.12f;
             canAttack.Value = false;
-            CharacterName.Value = $"Player {OwnerClientId}"; // -- FK -- 2023.02.25 2:50
+            
 
-
+            characterNameUI = gameObject.GetComponentInChildren<Canvas>().GetComponentInChildren<TextMeshProUGUI>();
             canAttack.OnValueChanged += CanAttackOnValueChanged; // -- FK -- 2023.02.23 1:20
             CurrentHealth.OnValueChanged += CurrentHealthOnValueChanged; // -- FK -- 2023.02.24 18:19
-            //TODO: Player nevet szinkronizálni.
-
+            CharacterName.OnValueChanged += CharacterNameOnValueChanged;
         } 
+        
+        if(IsOwner){
+            var user = FirebaseAuth.DefaultInstance.CurrentUser;
+            if(user != null){
+                ChangeCharacterNameServerRpc(user.DisplayName, OwnerClientId);
+                UpdateCharacterNameServerRpc(user.DisplayName);
+                Debug.Log("Currently joined player: " + user.DisplayName);
+            }
+        } 
+        
+    }
+
+    private void OnLocalCharacterNameChanged(NetworkString previousValue, NetworkString newValue)
+    {
+        characterNameUI.text = newValue.ToString();
+    }
+
+    /*
+    [ClientRpc]
+    public void ChangeCharacterNameClientRpc(string name, ulong clientId){
+        ChangeCharacterNameServerRpc(name, clientId);
+        Debug.Log("Client id: " + clientId + " called serverrpc and requested name: " + name);
+    }*/
+
+    [ServerRpc]
+    private void ChangeCharacterNameServerRpc(string name, ulong clientId)
+    {
+        var playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+
+        if(playerObject != null){
+            var character = playerObject.GetComponent<Character>();
+            if(character != null){
+                character.CharacterName.Value = name;
+                Debug.Log("[Server]: Character name changed to: " + name);
+            }
+        }else{
+            Debug.Log("Nincs ilyen playerObject.");
+        }
     }
 
     // -- FK -- 2023.03.01 18:10
@@ -61,27 +103,68 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
         localPlayerOverlay.text = CharacterName.Value;
     }
 
+
     private void Start(){ 
-            
-    } 
+    }
+
+    private void CharacterNameOnValueChanged(NetworkString previousValue, NetworkString newValue)
+    {
+        UpdateCharacterNamesOnClientServerRpc(newValue, OwnerClientId);
+        Debug.Log("Character name changed to: " + newValue + "on clientid: " + OwnerClientId);
+    }
+
+    
+    
+
+    [ServerRpc]
+    private void UpdateCharacterNamesOnClientServerRpc(string newName, ulong clientId){
+
+        var playerNetworkObjectId = GetPlayerNetworkObjectId(clientId);
+        var networkObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[playerNetworkObjectId.Value];
+            if(networkObject != null){
+                var character = networkObject.GetComponent<Character>();
+                if(character != null){
+                    character.CharacterName.Value = newName;
+                    Debug.Log("[Client]: Other player changed name to " + newName);
+                }
+            }
+
+    }
+
+    private ulong? GetPlayerNetworkObjectId(ulong clientId)
+    {
+        return NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.GetComponent<NetworkObject>().NetworkObjectId;
+    }
+
+    [ServerRpc]
+    public void UpdateCharacterNameServerRpc(string newName)
+    {
+        characterName.Value = newName;
+        
+    }
 
     void Update(){
         // -- FK -- 2023.03.01 18:10
+        
+        
         if(!overlaySet && !string.IsNullOrEmpty(characterName.Value)){ 
             SetOverlay();
             overlaySet = true;
         }
 
-        
-        Debug.Log("CharacName value: " + CharacterName.Value);
-
 
         if(IsOwner && IsLocalPlayer){
             DealDamage(Damage.Value);
+
+            Debug.Log("CharacName value: " + CharacterName.Value);
+
             //ClientRequestNameUpdate();
             //transform.GetComponentInChildren<Canvas>().GetComponentInChildren<TextMeshProUGUI>().text = CharacterName.Value;
         }
     }
+    
+
+    
 
 
     [ServerRpc]
