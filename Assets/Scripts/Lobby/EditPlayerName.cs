@@ -21,41 +21,31 @@ public class EditPlayerName : MonoBehaviour {
     //private string playerName = "Code Monkey";
 
     public static string email;
+    public static string playerName;
 
     private void Awake() {
         Instance = this;
 
-        GetComponent<Button>().onClick.AddListener(() => {
-            UI_InputWindow.Show_Static("Player Name", email, "abcdefghijklmnopqrstuvxywzABCDEFGHIJKLMNOPQRSTUVXYWZ .,-@", 20,
-            () => {
-                // Cancel
-            },
-            (string newName) => {
-                email = newName;
-
-                playerNameText.text = email;
-
-                OnNameChanged?.Invoke(this, EventArgs.Empty);
-            });
-        });
-
-        playerNameText.text = email;
     }
 
     private void Start() {
         //OnNameChanged += EditPlayerName_OnNameChanged;
         if (FirebaseAuth.DefaultInstance.CurrentUser != null) {
-            email = FirebaseAuth.DefaultInstance.CurrentUser.Email;
+            playerName = FirebaseAuth.DefaultInstance.CurrentUser.DisplayName;
+            playerNameText.text = playerName;
         }
     }
 
     private void EditPlayerName_OnNameChanged(object sender, EventArgs e) {
-        LobbyManager.Instance.UpdatePlayerName(GetPlayerName());
+        LobbyManager.Instance.UpdatePlayerName(GetPlayerNameFromFirebase());
     }
 
     public string GetPlayerName() {
         return email;
     }
 
+    public string GetPlayerNameFromFirebase(){
+        return FirebaseAuth.DefaultInstance.CurrentUser.DisplayName;
+    }
 
 }

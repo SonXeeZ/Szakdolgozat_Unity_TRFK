@@ -56,9 +56,9 @@ public class LobbyManager : MonoBehaviour {
     private float lobbyPollTimer;
     private float refreshLobbyListTimer = 5f;
     private Lobby joinedLobby;
-    //private string playerName;
 
     private string email;
+    private string playerName;
 
     void Start() {
     UnityServices.InitializeAsync();
