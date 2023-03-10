@@ -69,17 +69,29 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
         
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    private void UpdateClientCanvasRoationServerRpc(ulong clientId){
+        UpdateClientCavasRotationClientRpc(clientId);
+    }
+
+    [ClientRpc]
+    private void UpdateClientCavasRotationClientRpc(ulong clientId)
+    {
+        if(clientId == OwnerClientId){
+            FreezeCanvasRotation(GetComponentInChildren<Canvas>());
+        }
+            
+    }
+
+    private void FreezeCanvasRotation(Canvas canvas){ 
+        canvas.transform.rotation = Quaternion.Euler(15, 0, 0);
+    }
+
+
     private void OnLocalCharacterNameChanged(NetworkString previousValue, NetworkString newValue)
     {
         characterNameUI.text = newValue.ToString();
     }
-
-    /*
-    [ClientRpc]
-    public void ChangeCharacterNameClientRpc(string name, ulong clientId){
-        ChangeCharacterNameServerRpc(name, clientId);
-        Debug.Log("Client id: " + clientId + " called serverrpc and requested name: " + name);
-    }*/
 
     [ServerRpc]
     private void ChangeCharacterNameServerRpc(string name, ulong clientId)
@@ -155,7 +167,7 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
 
         if(IsOwner && IsLocalPlayer){
             DealDamage(Damage.Value);
-
+            UpdateClientCanvasRoationServerRpc(OwnerClientId);
             Debug.Log("CharacName value: " + CharacterName.Value);
 
             //ClientRequestNameUpdate();
