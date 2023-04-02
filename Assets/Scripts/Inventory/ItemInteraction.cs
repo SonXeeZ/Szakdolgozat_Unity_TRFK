@@ -27,7 +27,9 @@ public class ItemInteraction : NetworkBehaviour
     }
 
     void Update(){
+        if(!IsOwner) return;
 
+        
         Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
 

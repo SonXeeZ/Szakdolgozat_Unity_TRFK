@@ -9,23 +9,20 @@ public class InventorySystem : NetworkBehaviour
     [SerializeField] GameObject InventoryUI;
 
 
-    private void Awake(){
-        enabled = true;
-        InventoryUI = GameObject.Find("InventoryPanel");
-        InventoryUI.SetActive(false);
-    }
 
-    /*private void OnNetworkSpawn(){
+    public override void OnNetworkSpawn(){
         if(IsOwner){
             enabled = true;
             InventoryUI = GameObject.Find("InventoryPanel");
             InventoryUI.SetActive(false);
         }
            
-    }*/
+    }
 
     private void Update(){
-        EnableInventoryUI();
+        if(IsOwner){ 
+            EnableInventoryUI();
+        }
     }
         
     private void Start(){
@@ -99,67 +96,15 @@ public class InventorySystem : NetworkBehaviour
         {
         slots[emptySlotIndex].itemInSlot = obj.itemStats;
         slots[emptySlotIndex].AmountInSlot = obj.amount;
-        Destroy(obj.gameObject);
+        //Destroy(obj.gameObject);
+        NetworkManager.Destroy(obj.gameObject);
+        //DestroyPickedUpItemOnAllClientsServerRpc(obj);
         slots[emptySlotIndex].SetStats();
         return;
         }
     }
-    
 
-/*
-public void PickUpItem(ItemObject obj)
-{
-    bool itemAdded = false;
 
-    // searching for existing items with the same itemID
-    for (int i = 0; i < slots.Length; i++)
-    {
-        if (slots[i].itemInSlot != null && slots[i].itemInSlot.itemId == obj.itemStats.itemId && slots[i].AmountInSlot < slots[i].itemInSlot.maxItemStack)
-        {
-            int amountToAdd = Mathf.Min(slots[i].itemInSlot.maxItemStack - slots[i].AmountInSlot, obj.amount);
-
-            slots[i].AmountInSlot += amountToAdd;
-            obj.amount -= amountToAdd;
-            slots[i].SetStats();
-
-            if (obj.amount == 0)
-            {
-                itemAdded = true;
-                Destroy(obj.gameObject);
-                break;
-            }
-        }
-    }
-
-    // if the item was not added to an existing stack, find an empty slot
-    if (!itemAdded)
-    {
-        for (int i = 0; i < slots.Length; i++)
-        {
-            if (slots[i].itemInSlot == null)
-            {
-                slots[i].itemInSlot = obj.itemStats;
-                slots[i].AmountInSlot = Mathf.Min(obj.amount, obj.itemStats.maxItemStack);
-                obj.amount -= slots[i].AmountInSlot;
-                slots[i].SetStats();
-
-                if (obj.amount == 0)
-                {
-                    Destroy(obj.gameObject);
-                }
-
-                break;
-            }
-        }
-    }
-
-    // if there is still an amount left, recursively call the method to add to the next slot
-    if (obj.amount > 0)
-    {
-        PickUpItem(obj);
-    }
-}
-*/
 
     bool WillHitMaxStack(int index, int amount)
     {
@@ -177,4 +122,5 @@ public void PickUpItem(ItemObject obj)
     {
         return  (slots[index].AmountInSlot + amount)-slots[index].itemInSlot.maxItemStack;
     }
+
 }
