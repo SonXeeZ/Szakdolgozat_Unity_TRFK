@@ -9,7 +9,11 @@ public interface ICharacterStats
 
     NetworkVariable<int> Level { get; set; }
 
-    NetworkVariable<int> Experience { get; set; }
+    NetworkVariable<int> MaxLevel { get; set; }
+
+    NetworkVariable<int> CurrentExperience { get; set; }
+
+    NetworkVariable<int> NeededExperienceToLevelUp { get; set; }
 
     NetworkVariable<float> Speed { get; set; }
 

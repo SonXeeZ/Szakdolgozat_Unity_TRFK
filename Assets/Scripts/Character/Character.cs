@@ -18,15 +18,20 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
 
     [SerializeField]private NetworkVariable<int> level = new NetworkVariable<int>();
     public NetworkVariable<int> Level { get => level; set => level = value; }
-
-    [SerializeField] private NetworkVariable<int> experience = new NetworkVariable<int>();
-    public NetworkVariable<int> Experience { get => experience; set => experience = value ; }
     [SerializeField] private NetworkVariable<float> speed = new NetworkVariable<float>();
     public NetworkVariable<float> Speed { get => speed; set => speed = value; }
 
     private NetworkVariable<NetworkString> characterName = new NetworkVariable<NetworkString>();
     public NetworkVariable<NetworkString> CharacterName { get => characterName; set => characterName = value; }
 
+    private NetworkVariable<int> maxLevel = new NetworkVariable<int>();
+    public NetworkVariable<int> MaxLevel { get => maxLevel; set => maxLevel = value; }
+
+    private NetworkVariable<int> currentExperience = new NetworkVariable<int>();
+    public NetworkVariable<int> CurrentExperience { get => currentExperience; set => currentExperience = value; }
+
+    private NetworkVariable<int> neededExperienceToLevelUp = new NetworkVariable<int>();
+    public NetworkVariable<int> NeededExperienceToLevelUp { get => neededExperienceToLevelUp; set => neededExperienceToLevelUp = value; }
 
     private Transform enemyTransform;
     private bool overlaySet = false; // -- FK -- 2023.03.01 18:10
@@ -38,6 +43,9 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
     
     private TextMeshProUGUI characterNameUI;
 
+    [SerializeField] public TextMeshProUGUI UI_Experience_Text;
+
+    
     public override void OnNetworkSpawn()
     {
 
@@ -47,15 +55,22 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
             CurrentHealth.Value = MaxHealth.Value;
             Damage.Value = 10;
             Level.Value = 1;
-            Experience.Value = 0;
+            MaxLevel.Value = 30;
             Speed.Value = 5.12f;
             canAttack.Value = false;
+            currentExperience.Value = 0;
+            neededExperienceToLevelUp.Value = CalculateNeededExperienceToLevelUP();
+            AssignUIExperienceComponent();
+            
+            UI_Experience_Text.text = "XP: " + currentExperience.Value + "/" + neededExperienceToLevelUp.Value;
+
             
 
             characterNameUI = gameObject.GetComponentInChildren<Canvas>().GetComponentInChildren<TextMeshProUGUI>();
             canAttack.OnValueChanged += CanAttackOnValueChanged; // -- FK -- 2023.02.23 1:20
             CurrentHealth.OnValueChanged += CurrentHealthOnValueChanged; // -- FK -- 2023.02.24 18:19
             CharacterName.OnValueChanged += CharacterNameOnValueChanged;
+        
         } 
         
         if(IsOwner){
@@ -65,9 +80,74 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
                 UpdateCharacterNameServerRpc(user.DisplayName);
                 Debug.Log("Currently joined player: " + user.DisplayName);
             }
-        } 
+        }
+
+        if(IsClient && IsLocalPlayer){
+            
+            MaxHealth.Value = 100;
+            CurrentHealth.Value = MaxHealth.Value;
+            Damage.Value = 10;
+            Level.Value = 1;
+            MaxLevel.Value = 30;
+            Speed.Value = 5.12f;
+            canAttack.Value = false;
+            currentExperience.Value = 0;
+            neededExperienceToLevelUp.Value = CalculateNeededExperienceToLevelUP();
+            AssignUIExperienceComponent();
+            UI_Experience_Text.text = "XP: " + currentExperience.Value + "/" + neededExperienceToLevelUp.Value;
+            Debug.Log("Needed experience to level up: " + neededExperienceToLevelUp.Value + " on client: " + OwnerClientId);
+        }
+
+        
         
     }
+
+    #region Experience
+
+    private void AssignUIExperienceComponent(){
+        GameObject canvas = GameObject.Find("Canvas");
+        GameObject UIExp = canvas.transform.Find("UI_Experience").gameObject;
+        UI_Experience_Text = UIExp.GetComponentInChildren<TextMeshProUGUI>();
+    }
+
+    private int CalculateNeededExperienceToLevelUP(){
+        return NeededExperienceToLevelUp.Value = (int) (100 * Math.Log(Level.Value + 1));
+    }
+
+    private void AddExperience(int amount,ulong clientId){
+        AddExperienceServerRpc(amount,clientId);
+    }
+
+    [ServerRpc]
+    private void AddExperienceServerRpc(int amount, ulong clientId){
+
+            var playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+            var playerCharacter = playerObject.GetComponent<Character>();
+            if(playerCharacter == null) return;
+            if(playerCharacter.Level.Value == playerCharacter.MaxLevel.Value) return;
+            if(playerCharacter.currentExperience.Value + amount > playerCharacter.NeededExperienceToLevelUp.Value){
+                var remainingExperience = (playerCharacter.currentExperience.Value + amount) - playerCharacter.NeededExperienceToLevelUp.Value;
+                playerCharacter.currentExperience.Value = 0;
+                playerCharacter.Level.Value += 1;
+                playerCharacter.UI_Experience_Text.text = "XP: " + playerCharacter.currentExperience.Value + "/" + playerCharacter.NeededExperienceToLevelUp.Value;
+                
+                AddExperienceServerRpc(remainingExperience, playerCharacter.OwnerClientId);
+            } else if(playerCharacter.currentExperience.Value + amount == playerCharacter.NeededExperienceToLevelUp.Value){
+                playerCharacter.currentExperience.Value = 0;
+                playerCharacter.Level.Value += 1;
+                playerCharacter.UI_Experience_Text.text = "XP: " + playerCharacter.currentExperience.Value + "/" + playerCharacter.NeededExperienceToLevelUp.Value;
+                
+            } else {
+                playerCharacter.currentExperience.Value += amount;
+                playerCharacter.UI_Experience_Text.text = "XP: " + playerCharacter.currentExperience.Value + "/" + playerCharacter.NeededExperienceToLevelUp.Value;
+            }
+            
+            
+            
+    }
+    #endregion
+
+
 
     [ServerRpc(RequireOwnership = false)]
     private void UpdateClientCanvasRoationServerRpc(ulong clientId){
@@ -169,6 +249,11 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
             DealDamage(Damage.Value);
             UpdateClientCanvasRoationServerRpc(OwnerClientId);
             Debug.Log("CharacName value: " + CharacterName.Value);
+
+            if(Input.GetKeyDown(KeyCode.Space)){
+                AddExperience(17,OwnerClientId);
+                Debug.Log("Experience added for client: " + OwnerClientId);
+            }
 
             //ClientRequestNameUpdate();
             //transform.GetComponentInChildren<Canvas>().GetComponentInChildren<TextMeshProUGUI>().text = CharacterName.Value;
