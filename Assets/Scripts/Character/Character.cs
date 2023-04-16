@@ -250,7 +250,7 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
             UpdateClientCanvasRoationServerRpc(OwnerClientId);
             Debug.Log("CharacName value: " + CharacterName.Value);
 
-            if(Input.GetKeyDown(KeyCode.Space)){
+            if(Input.GetKeyDown(KeyCode.Backspace)){
                 AddExperience(17,OwnerClientId);
                 Debug.Log("Experience added for client: " + OwnerClientId);
             }
