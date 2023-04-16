@@ -267,25 +267,34 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
     [ServerRpc]
     public void DealDamageServerRpc(int damage)
     {
-        if(enemyTransform.GetComponent<Character>().currentHealth.Value <= 0){
+        if(enemyTransform.GetComponent<Slime>().EnemyCurrentHealth.Value <= 0){
             return;
         }else{
         } 
 
         if(!canAttack.Value) return;
         //var enemyId = NetworkManager.Singleton.ConnectedClients[enemyTransform.gameObject.GetComponent<NetworkObject>().OwnerClientId];
-        enemyTransform.GetComponent<Character>().CurrentHealth.Value -= damage;
+        enemyTransform.GetComponent<Slime>().EnemyCurrentHealth.Value -= damage;
     }
     
     // https://docs.unity3d.com/ScriptReference/Collider.OnTriggerEnter.html
     private void OnTriggerEnter(Collider other)
     {
         if(IsOwner){
-            if(other.gameObject.CompareTag("Player")){ // -- FK -- 2023.02.23 23:30
-            
+            //Check if Collider is a Box Collider
+            if(transform.GetComponent<Collider>() is BoxCollider){
+                Debug.Log("Box Collider");
+            }
+            /*if(other.GetComponent<Collider>() is CapsuleCollider){
+                Debug.Log("Capsule Collider");
+                return;
+            }*/
+            if(other.gameObject.CompareTag("Enemy")){ // -- FK -- 2023.02.23 23:30
+
+            Debug.Log("You entered in enemy trigger.");
             //TODO: GetDistance Vector3 a legközelebbi "player" kiválasztásához.
 
-            EnteredInEnemyTriggerWithPlayerServerRPC(other.gameObject.GetComponent<NetworkObject>().OwnerClientId);
+            EnteredInEnemyTriggerWithPlayerServerRPC(other.gameObject.GetComponent<NetworkObject>().NetworkObjectId,30);
             }
             else{
                 Debug.Log("You can't attack this object.");
@@ -300,10 +309,12 @@ public class Character : NetworkBehaviour, ICharacter, ICharacterStats
     }
 
     [ServerRpc]
-    private void EnteredInEnemyTriggerWithPlayerServerRPC(ulong enemyPlayerId)
+    private void EnteredInEnemyTriggerWithPlayerServerRPC(ulong enemyPlayerId, int damage)
     {
         transform.GetComponent<Character>().canAttack.Value = true;
-        enemyTransform = NetworkManager.Singleton.ConnectedClients[enemyPlayerId].PlayerObject.transform;
+        var enemy = NetworkManager.Singleton.SpawnManager.SpawnedObjects[enemyPlayerId];
+        enemyTransform = enemy.transform;
+        enemyTransform.GetComponent<Slime>().TakeDamage(damage);
         EnemySetMessageClientRpc(enemyPlayerId);
     }
 
