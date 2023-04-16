@@ -43218,6 +43218,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5578953259641813834, guid: 746c0412740fd344ebc9e8a46fae9c9d, type: 3}
+      propertyPath: m_text
+      value: Let's play!
+      objectReference: {fileID: 0}
     - target: {fileID: 8103415122343456182, guid: 746c0412740fd344ebc9e8a46fae9c9d, type: 3}
       propertyPath: m_Name
       value: ConfirmationWindow
